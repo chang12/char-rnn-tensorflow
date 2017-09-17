@@ -23,7 +23,7 @@ class TextLoader():
             print("loading preprocessed files")
             self.load_preprocessed(vocab_file, tensor_file)
         self.create_batches()
-        self.reset_batch_pointer()
+        self.pointer = 0
 
     def preprocess(self, input_file, vocab_file, tensor_file):
         with codecs.open(input_file, "r", encoding=self.encoding) as f:

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import tensorflow as tf
 
 import argparse
@@ -39,8 +38,8 @@ def sample(args):
         ckpt = tf.train.get_checkpoint_state(args.save_dir)
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            print(model.sample(sess, chars, vocab, args.n, args.prime,
-                               args.sample).encode('utf-8'))
+            sampled_sentence = model.sample(sess, chars, vocab, args.n, args.prime, args.sample)
+            print(sampled_sentence)
 
 if __name__ == '__main__':
     main()
