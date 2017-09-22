@@ -33,6 +33,9 @@ class TextLoader():
         self.pointer = 0
 
     def pre_process(self, input_file, vocab_file, tensor_file):
+        # self.tensor 는 index 의 np.array
+        # frequency 가 높은 character 에 작은 index 값이 배정되도록 sorted
+
         with codecs.open(input_file, "r", encoding=self.encoding) as f:
             data = f.read()
         counter = collections.Counter(data)
@@ -54,11 +57,13 @@ class TextLoader():
         self.num_batches = int(self.tensor.size / (self.batch_size * self.seq_length))
 
     def create_batches(self):
-        self.num_batches = int(self.tensor.size / (self.batch_size * self.seq_length))
+        # tensor.size = 200 / batch_size = 5 / seq_length = 10 -> num_batches = 4
+        # tensor.reshape(batch_size, -1) -> (5, 40)
+        # len(x_batches) = num_batches
+        # x_batches 의 각 element 들은 2d nd.array 가 되고, 각 row 가 sequence 가 된다. sequence 가 batch_size 만큼 있는 nd.array
 
-        # When the data (tensor) is too small,
-        # let's give them a better error message
-        if self.num_batches == 0:
+        self.num_batches = int(self.tensor.size / (self.batch_size * self.seq_length))
+        if self.num_batches == 0:  # When the data (tensor) is too small, let's give them a better error message
             assert False, "Not enough data. Make seq_length and batch_size small."
 
         self.tensor = self.tensor[:self.num_batches * self.batch_size * self.seq_length]
