@@ -82,11 +82,15 @@ def train(args):
         assert saved_chars == data_loader.chars, "Data and loaded model disagree on character set!"
         assert saved_vocab == data_loader.vocab, "Data and loaded model disagree on dictionary mappings!"
 
-    if not os.path.isdir(args.save_dir):
-        os.makedirs(args.save_dir)
-    with open(os.path.join(args.save_dir, 'config.pkl'), 'wb') as f:
+    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S")
+    save_dir = os.path.join(args.save_dir, timestamp)
+    log_dir = os.path.join(args.log_dir, timestamp)
+
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+    with open(os.path.join(save_dir, 'config.pkl'), 'wb') as f:
         cPickle.dump(args, f)
-    with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'wb') as f:
+    with open(os.path.join(save_dir, 'chars_vocab.pkl'), 'wb') as f:
         cPickle.dump((data_loader.chars, data_loader.vocab), f)
 
     model = Model(args)
@@ -94,8 +98,7 @@ def train(args):
     with tf.Session() as sess:
         # instrument for tensorboard
         summaries = tf.summary.merge_all()
-        writer = tf.summary.FileWriter(
-                os.path.join(args.log_dir, time.strftime("%Y-%m-%d-%H-%M-%S")))
+        writer = tf.summary.FileWriter(log_dir)
         writer.add_graph(sess.graph)
 
         sess.run(tf.global_variables_initializer())
@@ -129,7 +132,7 @@ def train(args):
                         or (e == args.num_epochs-1 and
                             b == data_loader.num_batches-1):
                     # save for the last result
-                    checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
+                    checkpoint_path = os.path.join(save_dir, 'model.ckpt')
                     saved_path = saver.save(sess, checkpoint_path, global_step=e * data_loader.num_batches + b)
                     print("model saved to {}".format(saved_path))
 
