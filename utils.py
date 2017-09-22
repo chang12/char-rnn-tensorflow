@@ -1,7 +1,9 @@
 import codecs
-import os
 import collections
+import os
+import random
 from six.moves import cPickle
+
 import numpy as np
 
 
@@ -30,7 +32,6 @@ class TextLoader():
             print("loading preprocessed files")
             self.load_preprocessed(vocab_file, tensor_file)
         self.create_batches()
-        self.pointer = 0
 
     def pre_process(self, input_file, vocab_file, tensor_file):
         # self.tensor 는 index 의 np.array
@@ -75,9 +76,6 @@ class TextLoader():
         self.y_batches = np.split(y_data.reshape(self.batch_size, -1), self.num_batches, 1)
 
     def next_batch(self):
-        x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
-        self.pointer += 1
+        random_pointer = random.randint(0, self.num_batches)
+        x, y = self.x_batches[random_pointer], self.y_batches[random_pointer]
         return x, y
-
-    def reset_batch_pointer(self):
-        self.pointer = 0

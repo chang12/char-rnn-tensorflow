@@ -109,7 +109,6 @@ def train(args):
         for e in range(args.num_epochs):
             sess.run(tf.assign(model.lr,
                                args.learning_rate * (args.decay_rate ** e)))
-            data_loader.reset_batch_pointer()
             state = sess.run(model.initial_state)
             for b in range(data_loader.num_batches):
                 start = time.time()
