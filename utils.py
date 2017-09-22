@@ -6,11 +6,18 @@ import numpy as np
 
 
 class TextLoader():
-    def __init__(self, data_dir, batch_size, seq_length, encoding='utf-8'):
+    def __init__(self, data_dir, batch_size, seq_length, encoding="utf-8"):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.seq_length = seq_length
         self.encoding = encoding
+        self.chars = None
+        self.vocab_size = None
+        self.vocab = None
+        self.tensor = None
+        self.num_batches = None
+        self.x_batches = None
+        self.y_batches = None
 
         input_file = os.path.join(data_dir, "input.txt")
         vocab_file = os.path.join(data_dir, "vocab.pkl")
@@ -18,14 +25,14 @@ class TextLoader():
 
         if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
             print("reading text file")
-            self.preprocess(input_file, vocab_file, tensor_file)
+            self.pre_process(input_file, vocab_file, tensor_file)
         else:
             print("loading preprocessed files")
             self.load_preprocessed(vocab_file, tensor_file)
         self.create_batches()
         self.pointer = 0
 
-    def preprocess(self, input_file, vocab_file, tensor_file):
+    def pre_process(self, input_file, vocab_file, tensor_file):
         with codecs.open(input_file, "r", encoding=self.encoding) as f:
             data = f.read()
         counter = collections.Counter(data)
@@ -44,12 +51,10 @@ class TextLoader():
         self.vocab_size = len(self.chars)
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
         self.tensor = np.load(tensor_file)
-        self.num_batches = int(self.tensor.size / (self.batch_size *
-                                                   self.seq_length))
+        self.num_batches = int(self.tensor.size / (self.batch_size * self.seq_length))
 
     def create_batches(self):
-        self.num_batches = int(self.tensor.size / (self.batch_size *
-                                                   self.seq_length))
+        self.num_batches = int(self.tensor.size / (self.batch_size * self.seq_length))
 
         # When the data (tensor) is too small,
         # let's give them a better error message
@@ -57,14 +62,12 @@ class TextLoader():
             assert False, "Not enough data. Make seq_length and batch_size small."
 
         self.tensor = self.tensor[:self.num_batches * self.batch_size * self.seq_length]
-        xdata = self.tensor
-        ydata = np.copy(self.tensor)
-        ydata[:-1] = xdata[1:]
-        ydata[-1] = xdata[0]
-        self.x_batches = np.split(xdata.reshape(self.batch_size, -1),
-                                  self.num_batches, 1)
-        self.y_batches = np.split(ydata.reshape(self.batch_size, -1),
-                                  self.num_batches, 1)
+        x_data = self.tensor
+        y_data = np.copy(self.tensor)
+        y_data[:-1] = x_data[1:]
+        y_data[-1] = x_data[0]
+        self.x_batches = np.split(x_data.reshape(self.batch_size, -1), self.num_batches, 1)
+        self.y_batches = np.split(y_data.reshape(self.batch_size, -1), self.num_batches, 1)
 
     def next_batch(self):
         x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
